@@ -62,17 +62,20 @@ app.use(cors({
   }
 }))
 
+/*
 mercadopago.configure({
   //sandbox: true,
   //access_token: process.env.MP_TOKEN_TEST
   access_token: process.env.MP_TOKEN
 })
+*/
+
 
 var random_code = function (factor){ 
   return Math.random().toString(36).substring(2, factor) + Math.random().toString(36).substring(2, factor)
 }
 
-mongodb.MongoClient.connect(process.env.MONGO_URL, {useNewUrlParser: true }, function(err, database) {
+mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, database) {
   if(err) throw err
 
   const db = database.db(process.env.MONGO_URL.split('/').reverse()[0])
@@ -519,6 +522,81 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, {useNewUrlParser: true }, fun
 
   app.get('/', function (req, res) {
     res.render('index')
+  })
+
+  io.on('connection', function(socket){ //join room on connect
+
+    socket.on('disconnect', function() {
+      console.log("disconnect")
+      for(var i = 0; i < playersIdle.length; i++ ){
+        if(playersIdle[i].socket === socket.id){
+          console.log(playersIdle[i].code + " just disconnected")
+          playersIdle.splice(i, 1)
+        }
+      }
+      io.emit('players', playersIdle)
+    })
+
+    socket.on('join', function(id) {
+      socket.join(id)
+    })
+
+    socket.on('leave', function(id) {
+      socket.leave(id)
+    })
+
+
+    socket.on('lobby_join', function(data) {
+      var exists = false
+      for(var i = 0; i < playersIdle.length; i++ ){
+        if(playersIdle[i].code === data.code){
+          exists = true
+        }
+      }
+      if(exists === false){
+        console.log(data.code + " joins. mode: " + (data.observe ? '👁️' : '👤'))
+        playersIdle.push({
+          code: data.code,
+          socket:socket.id,
+          observe: data.observe
+        })
+      }
+      io.emit('players', playersIdle)
+    })
+
+    socket.on('lobby_leave', function(data) {
+      for(var i = 0; i < playersIdle.length; i++ ){
+        if(playersIdle[i].code === data.code){
+          console.log(data.code + " leaves")
+          playersIdle.splice(i, 1)
+        }
+      }
+      io.emit('players', playersIdle)
+    })
+
+    socket.on('data', function(data) { //data object emitter
+      let id = data.id
+      let item = {}
+
+      for(var i in data){
+        item[i] = data[i]
+      }
+     
+      delete item.id 
+      delete item.collection 
+      item.updatedAt = moment().utc().format()      
+
+      var ObjectId = require('mongodb').ObjectId
+      return db.collection(data.collection).findOneAndUpdate(
+      {
+        '_id': new ObjectId(id)
+      },
+      {
+        "$set": item
+      },{ new: true }).then(function(doc){
+        io.to(id).emit('data', data)
+      })
+    })
   })
 
   var server = http.listen(process.env.PORT, function () { //run http and web socket server
