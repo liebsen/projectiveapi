@@ -1,6 +1,7 @@
 const fs = require('fs')
 var express = require('express');
 var bcrypt = require('bcrypt');
+var bson = require('bson');
 var path = require('path');
 var axios = require('axios');
 var app = express();
@@ -314,10 +315,10 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
         }).then(function(data) {    
           emailClient.send({
             to:email,
-            subject: name + ', te damos la bienvenida a FletsPanel.',
+            subject: name + ', te damos la bienvenida a Projective.',
             data:{
               title:'Confirmá la creación de tu cuenta',
-              message:'Hola ' + name + '! Por favor valida tu cuenta ahora para empezar a usar FletsPanel',
+              message:'Hola ' + name + '! Por favor valida tu cuenta ahora para empezar a usar Projective',
               link: process.env.PANEL_URL + '/validate/' + validation_code,
               linkText:'Validar mi cuenta'
             },
@@ -426,48 +427,94 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     })   
   })
 
-  app.post('/panel/charts', checkToken, function (req, res) { 
-    var types = { week : 4, month : 6 } 
-    , data = {}
-    , max = 0
-
-    db.collection('preferences').find({})
+  app.post('/projects', checkToken, function (req, res) { 
+    db.collection('projects').find(
+      {
+        owner: req.decoded.id
+      })
       .sort({_id:-1})
       .limit(1000)
       .skip(0)
       .toArray(function(err,results){
-        results.forEach((item) => {
-          for(var j in types){
-            for(var i = 0; i < types[j]; i++ ){
-              var date = moment.utc(item.createdAt,'YYYY-MM-DD');
-              if(helper.isPeriod(date,i,j)){
-                if(!data[j]) data[j] = {}
-                if(!data[j][i]) data[j][i] = {
-                  preferences: 0,
-                  approved: 0
-                }
-                data[j][i].preferences++
-
-                if(max < data[j][i].preferences){
-                  max = data[j][i].preferences
-                }
-
-                if(item.mercadopago){
-                  if(!data[j][i][item.mercadopago.status]) 
-                    data[j][i][item.mercadopago.status] = 0
-                  data[j][i][item.mercadopago.status]++
-                }
-              } 
-            }
-          }
-        })
-
-        return res.json({
-          max: max,
-          data: data
-        })
+        return res.json(results)
       })  
-      // ./ 
+  })
+
+  app.get('/project/:_id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId; 
+    db.collection('projects').find(
+      {
+        '_id': new ObjectId(req.params._id)
+      })
+      .toArray(function(err,results){
+        return res.json(results[0])
+      })  
+  })
+
+  app.put('/milestones/:project_id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId;
+    let inputs = req.body.milestones.split("\n")
+    let milestones = []
+    inputs.forEach(milestone => {
+      if(milestone.length){
+        var id = new bson.ObjectID()
+        console.log(id)
+        milestones.push({
+          id: id.toString(),
+          title: milestone,
+          owner: req.decoded.id
+        })
+      }
+    })
+    db.collection('projects').findOneAndUpdate(
+    {
+      '_id': new ObjectId(req.params.project_id)
+    },
+    {
+      "$push": {
+        milestones : { $each : milestones }
+      }
+    },{ 
+      upsert: true, 
+      'new': true, 
+      returnOriginal:false 
+    }).then(function(doc){
+      return res.json(doc.value)
+    }).catch(function(err){
+      if(err){
+        return res.json({
+          status: 'error'
+        })
+      }
+    })  
+  })
+
+  // creates a project
+  app.put('/project', checkToken, function (req, res) { 
+    req.body.owner = req.decoded.id
+    db.collection('projects').insertOne(req.body, function (error, response) {
+      if(error) {
+        console.log('Error occurred while inserting');
+      } else {
+        return res.json(response.ops[0])
+      }
+    })
+  })
+
+  // updates a project
+  app.post('/project', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId; 
+    db.collection('projects').findOneAndUpdate({
+      '_id': new ObjectId(req.body._id)
+    },{
+      "$set": req.body
+    },{ 
+      upsert: true, 
+      'new': true, 
+      returnOriginal:false 
+    }).then(function(doc){
+      return res.json(doc.value)
+    });
   })
 
 
@@ -579,7 +626,7 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     })
   })
 
-  var server = http.listen(process.env.PORT, function () { //run http and web socket server
+  var server = http.listen(process.env.PORT||3000, function () { //run http and web socket server
     var host = server.address().address;
     var port = server.address().port;
     console.log('Server listening at address ' + host + ', port ' + port);
