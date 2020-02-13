@@ -282,7 +282,8 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     var name = req.body.name
     var code = req.body.code
     var validation_code = random_code(32)
-
+    console.log("email: " + email)
+    
     db.collection('accounts').findOne({
       email: email
     },function(err, result) {
@@ -471,32 +472,10 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
 
   app.post('/panel/list', function (req, res) { 
     var data = {}
-    , type = req.body.type
-    , view = req.body.view
-    , period = req.body.period
-    , from = null
-    , to = null
 
-    if(period>0){
-      from = moment().subtract(period,view + (period>1?'s':'')).utc().startOf(view)
-      to = moment().subtract(period,view + (period>1?'s':'')).utc().endOf(view)
-    } else {
-      from = moment().utc().startOf(view),
-      to = moment().utc().endOf(view)
-    }
-    
-    var find = {
-      "createdAt": {
-        $gte: from.format(),
-        $lt: to.format()
-      }
-    }
+    db.collection('projects').find({
 
-    if(type != 'preferences'){
-      find['mercadopago.status'] = type
-    }
-
-    db.collection('preferences').find(find)
+    })
       .sort({_id:-1})
       .limit(1000)
       .skip(0)
