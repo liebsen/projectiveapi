@@ -1,0 +1,127 @@
+body {
+	font-family: 'Rubik', cursive;
+}
+.navbar-item {
+  padding: 0 .75rem;
+}
+
+.navbar-item img {
+  max-height: 2.75rem;
+}
+
+.panel {
+  padding-top: 0.75rem;
+}
+/* spinner */
+
+.spinner-container {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  -webkit-animation: rotate 2s linear infinite;
+  animation: rotate 2s linear infinite;
+  z-index: 2;
+  width:45px; height:45px;
+  margin: 100px auto;
+  display:block;
+  height: 70%;
+}
+
+.spinner-container .path {
+	stroke-dasharray: 1,150; /* 1%, 101% circumference */
+	stroke-dashoffset: 0;
+	stroke: rgba(27, 154, 89, 0.7);
+	stroke-linecap: round;
+	-webkit-animation: dash 1.5s ease-in-out infinite;
+	animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1,150;  /* 1%, 101% circumference */
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90,150; /* 70%, 101% circumference */
+    stroke-dashoffset: -35;   /* 25% circumference */
+  }
+  100% {
+    stroke-dasharray: 90,150; /* 70%, 101% circumference */
+    stroke-dashoffset: -124;  /* -99% circumference */
+  }
+}
+
+#countdown {
+  position: relative;
+  margin: 10px auto;
+  height: 40px;
+  width: 40px;
+  text-align: center;
+}
+
+#countdown-number {
+  color: #23d160;
+  display: inline-block;
+  line-height: 40px;
+}
+
+#countdown svg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  transform: rotateY(-180deg) rotateZ(-90deg);
+}
+
+#countdown svg circle {
+  stroke-dasharray: 113px;
+  stroke-dashoffset: 0px;
+  stroke-linecap: round;
+  stroke-width: 3px;
+  stroke: #23d160;
+  fill: none;
+}
+
+.countdown {
+  animation: countdown 30s linear infinite forwards;
+}
+
+@keyframes countdown {
+  from {
+    stroke-dashoffset: 0px;
+  }
+  to {
+    stroke-dashoffset: 113px;
+  }
+}
+
+.fadeIn {
+  animation:.15s ease 0s normal forwards 1 fadeIn;
+  -webkit-animation:.75s ease 0s normal forwards 1 fadeIn;
+  opacity:0
+}
+
+@keyframes fadeIn{
+  0%{opacity:0}
+  80%{opacity:0}
+  100%{opacity:1}
+}
+
+.fadeOut {
+  animation:.15s ease 0s normal forwards 1 fadeOut;
+  -webkit-animation:.75s ease 0s normal forwards 1 fadeOut;
+  opacity:1
+}
+
+@keyframes fadeOut{
+  0%{opacity:1}
+  80%{opacity:1}
+  100%{opacity:0}
+}
+
+
+
+
