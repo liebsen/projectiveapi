@@ -18,6 +18,7 @@ var emailHelper = require('./email/helper')
 var emailClient = emailHelper()
 var nodeMailer = require('nodemailer')
 var jwt = require('jsonwebtoken')
+var socketUsers = []
 const tokenExpires = 86400 * 30 * 12 // 1 year
 const saltRounds = 10;
 const allowedOrigins = [
@@ -283,7 +284,7 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     var code = req.body.code
     var validation_code = random_code(32)
     console.log("email: " + email)
-    
+
     db.collection('accounts').findOne({
       email: email
     },function(err, result) {
@@ -507,13 +508,13 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
 
     socket.on('disconnect', function() {
       console.log("disconnect")
-      for(var i = 0; i < playersIdle.length; i++ ){
-        if(playersIdle[i].socket === socket.id){
-          console.log(playersIdle[i].code + " just disconnected")
-          playersIdle.splice(i, 1)
+      for(var i = 0; i < socketUsers.length; i++ ){
+        if(socketUsers[i].socket === socket.id){
+          console.log(socketUsers[i].code + " just disconnected")
+          socketUsers.splice(i, 1)
         }
       }
-      io.emit('players', playersIdle)
+      io.emit('players', socketUsers)
     })
 
     socket.on('join', function(id) {
@@ -527,30 +528,30 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
 
     socket.on('lobby_join', function(data) {
       var exists = false
-      for(var i = 0; i < playersIdle.length; i++ ){
-        if(playersIdle[i].code === data.code){
+      for(var i = 0; i < socketUsers.length; i++ ){
+        if(socketUsers[i].code === data.code){
           exists = true
         }
       }
       if(exists === false){
         console.log(data.code + " joins. mode: " + (data.observe ? '👁️' : '👤'))
-        playersIdle.push({
+        socketUsers.push({
           code: data.code,
           socket:socket.id,
           observe: data.observe
         })
       }
-      io.emit('players', playersIdle)
+      io.emit('players', socketUsers)
     })
 
     socket.on('lobby_leave', function(data) {
-      for(var i = 0; i < playersIdle.length; i++ ){
-        if(playersIdle[i].code === data.code){
+      for(var i = 0; i < socketUsers.length; i++ ){
+        if(socketUsers[i].code === data.code){
           console.log(data.code + " leaves")
-          playersIdle.splice(i, 1)
+          socketUsers.splice(i, 1)
         }
       }
-      io.emit('players', playersIdle)
+      io.emit('players', socketUsers)
     })
 
     socket.on('data', function(data) { //data object emitter
