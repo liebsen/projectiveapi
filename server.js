@@ -441,7 +441,7 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
   })
 
   app.get('/project/:_id', checkToken, function (req, res) { 
-    var ObjectId = require('mongodb').ObjectId; 
+    var ObjectId = require('mongodb').ObjectId
     db.collection('projects').find(
       {
         '_id': new ObjectId(req.params._id)
@@ -451,18 +451,58 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
       })  
   })
 
+  app.delete('/project/:_id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId
+    db.collection('projects').deleteOne(
+      {
+        '_id': new ObjectId(req.params._id)
+      })
+      .then(result => res.json({status:'deleted'}))
+      .catch(err => console.error(`Delete failed with error: ${err}`))
+  })
+
+  app.delete('/milestone/:project_id/:_id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId
+    db.collection('projects').find(
+      {
+        '_id': new ObjectId(req.params.project_id)
+      })
+      .toArray(function(err,results){
+        var project = results[0]
+        let milestones = []
+
+        project.milestones.forEach((milestone) => {
+          if(milestone.id != req.params._id){
+            milestones.push(milestone)
+          }
+        })
+
+        db.collection('projects').findOneAndUpdate(
+          {
+            '_id': new ObjectId(req.params._id)
+          },
+          {
+            "$set": {
+              milestones : milestones
+            }
+          },{ new: true }).then(function(doc){
+            return res.json(doc.value)
+          })
+      })  
+  })
+
   app.put('/milestones/:project_id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId;
     let inputs = req.body.milestones.split("\n")
     let milestones = []
     inputs.forEach(milestone => {
       if(milestone.length){
-        var id = new bson.ObjectID()
-        console.log(id)
+        var id = new bson.ObjectID().toString()
         milestones.push({
-          id: id.toString(),
-          title: milestone,
-          owner: req.decoded.id
+          [id]:{
+            title: milestone,
+            owner: req.decoded.id
+          }
         })
       }
     })
