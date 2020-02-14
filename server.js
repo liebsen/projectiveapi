@@ -565,6 +565,10 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
   // creates a project
   app.put('/project', checkToken, function (req, res) { 
     req.body.owner = req.decoded.id
+    req.body.accounts = []
+    req.body.accounts.push({
+      id: req.decoded.id
+    })
     db.collection('projects').insertOne(req.body, function (error, response) {
       if(error) {
         console.log('Error occurred while inserting');
