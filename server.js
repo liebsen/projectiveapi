@@ -23,7 +23,7 @@ var socketUsers = []
 const tokenExpires = 86400 * 30 * 12 // 1 year
 const saltRounds = 10;
 const allowedOrigins = [
-  'http://localhost:4000',
+  'http://localhost:3000',
   'http://0.0.0.0:8000',
   'https://localhost:8080',
   'https://projective.herokuapp.com',
@@ -440,28 +440,45 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
       })  
   })
 
-  app.get('/project/:_id', checkToken, function (req, res) { 
+  app.get('/project/:id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId
     db.collection('projects').find(
       {
-        '_id': new ObjectId(req.params._id)
+        _id: new ObjectId(req.params.id)
       })
       .toArray(function(err,results){
         return res.json(results[0])
       })  
   })
 
-  app.delete('/project/:_id', checkToken, function (req, res) { 
+  app.delete('/project/:id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId
     db.collection('projects').deleteOne(
       {
-        '_id': new ObjectId(req.params._id)
+        _id: new ObjectId(req.params.id)
       })
       .then(result => res.json({status:'deleted'}))
       .catch(err => console.error(`Delete failed with error: ${err}`))
   })
 
-  app.delete('/milestone/:project_id/:_id', checkToken, function (req, res) { 
+
+  // gets a milestone
+  app.get('/milestone/:id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId
+    db.collection('projects').aggregate(
+      { $match : {
+         "milestones.id": req.params.id
+      }},
+      { $unwind : "$milestones" },
+      { $match : {
+         "milestones.id": req.params.id
+      }})
+      .toArray(function(err,results){
+        return res.json(results[0])
+      })  
+  })
+
+  app.delete('/milestone/:id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId
     db.collection('projects').find(
       {
@@ -491,29 +508,28 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
       })  
   })
 
+  // creates a milestone
   app.put('/milestones/:project_id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId;
     let inputs = req.body.milestones.split("\n")
-    let milestones = []
+    let $push_query = []
+
     inputs.forEach(milestone => {
       if(milestone.length){
-        var id = new bson.ObjectID().toString()
-        milestones.push({
-          [id]:{
-            title: milestone,
-            owner: req.decoded.id
-          }
+        $push_query.push({
+          id: new bson.ObjectID().toString(),
+          title: milestone,
+          owner: req.decoded.id
         })
       }
     })
+
     db.collection('projects').findOneAndUpdate(
     {
       '_id': new ObjectId(req.params.project_id)
     },
     {
-      "$push": {
-        milestones : { $each : milestones }
-      }
+      "$push": { milestones: { "$each" : $push_query } }
     },{ 
       upsert: true, 
       'new': true, 
@@ -527,6 +543,25 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
         })
       }
     })  
+  })
+
+  // gets an issue
+  app.get('/issues/:id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId
+    console.log(req.params.id)
+    db.collection('projects').aggregate(
+      { $match : {
+         "milestones.issues.id": req.params.id
+      }},
+      { $unwind : "$milestones" },
+      { $unwind : "$milestones.issues" },
+      { $match : {
+         "milestones.issues.id": req.params.id
+      }})
+      .toArray(function(err,results){
+        console.log(results[0])
+        return res.json(results[0])
+      })  
   })
 
   // creates a project
@@ -557,22 +592,38 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     });
   })
 
+  // creates an issue
+  app.put('/issues/:milestone_id', checkToken, function (req, res) { 
+    var ObjectId = require('mongodb').ObjectId;
+    let issue = req.body.issue
+    let id = new bson.ObjectID().toString()
+    let $push_query = []
 
-  app.post('/panel/list', function (req, res) { 
-    var data = {}
-
-    db.collection('projects').find({
-
+    $push_query.push({
+      id: new bson.ObjectID().toString(),
+      text: issue,
+      owner: req.decoded.id
     })
-      .sort({_id:-1})
-      .limit(1000)
-      .skip(0)
-      .toArray(function(err,data){
+
+    db.collection('projects').findOneAndUpdate(
+    {
+      'milestones.id': req.params.milestone_id
+    },
+    {
+      "$push": { "milestones.$.issues": { "$each" : $push_query } }
+    },{ 
+      upsert: true, 
+      'new': true, 
+      returnOriginal:false 
+    }).then(function(doc){
+      return res.json(doc.value)
+    }).catch(function(err){
+      if(err){
         return res.json({
-          data: data
+          status: 'error'
         })
-      })  
-      // ./ 
+      }
+    })  
   })
 
   app.post('/preference', checkToken, function (req, res) { 
