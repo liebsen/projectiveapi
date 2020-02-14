@@ -548,7 +548,6 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
   // gets an issue
   app.get('/issues/:id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId
-    console.log(req.params.id)
     db.collection('projects').aggregate(
       { $match : {
          "milestones.issues.id": req.params.id
@@ -559,7 +558,6 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
          "milestones.issues.id": req.params.id
       }})
       .toArray(function(err,results){
-        console.log(results[0])
         return res.json(results[0])
       })  
   })
@@ -595,13 +593,15 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
   // creates an issue
   app.put('/issues/:milestone_id', checkToken, function (req, res) { 
     var ObjectId = require('mongodb').ObjectId;
-    let issue = req.body.issue
+    let title = req.body.title
+    let text = req.body.text
     let id = new bson.ObjectID().toString()
     let $push_query = []
 
     $push_query.push({
       id: new bson.ObjectID().toString(),
-      text: issue,
+      title: title,
+      text: text,
       owner: req.decoded.id
     })
 
@@ -645,7 +645,6 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
   io.on('connection', function(socket){ //join room on connect
 
     socket.on('disconnect', function() {
-      console.log("disconnect")
       for(var i = 0; i < socketUsers.length; i++ ){
         if(socketUsers[i].socket === socket.id){
           console.log(socketUsers[i].code + " just disconnected")
