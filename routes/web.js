@@ -5,6 +5,7 @@ const contactController = require("./../controllers/contact")
 const authToken = require("./../controllers/auth")
 const accountController = require("./../controllers/account")
 const uploadController = require("./../controllers/upload")
+const personController = require("./../controllers/person")
 const projectController = require("./../controllers/project")
 const taskController = require("./../controllers/task")
 const issueController = require("./../controllers/issue")
@@ -34,6 +35,10 @@ let routes = (app, db) => {
 
 	router.get('/issue/:id', authToken, issueController.getById)
 	router.put('/issue/:task_id', authToken, issueController.create)
+
+	router.post('/person/create', authToken, personController.create)
+	router.post('/person/assign', authToken, personController.assign)
+	router.post('/person/search', authToken, personController.search)
   
 	router.post('/multiple-upload',uploadController.uploadImages,uploadController.resizeImages,uploadController.getResult)
 

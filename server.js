@@ -17,6 +17,7 @@ const allowedOrigins = [
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({ type: 'application/json' }))
+app.use(express.urlencoded({ extended: true }))
 app.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "*") // update to match the domain you will make the request from
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
@@ -40,8 +41,6 @@ app.use(cors({
 	}
 }))
 
-app.use(express.urlencoded({ extended: true }))
-
 mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, database) {
 	if(err) throw err
 	const db = database.db(process.env.MONGO_URL.split('/').reverse()[0])
@@ -52,6 +51,6 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
 
 	let port = 3000
 	http.listen(port, () => {
-	  console.log(`Running at localhost:${port}`)
+	  console.log(`Server running at localhost:${port}`)
 	})
 })

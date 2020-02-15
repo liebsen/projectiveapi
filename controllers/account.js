@@ -1,6 +1,5 @@
 const path = require("path")
 const jwt = require('jsonwebtoken')
-const nodeMailer = require('nodemailer')
 const emailHelper = require('../email/helper')
 const emailClient = emailHelper()
 const bcrypt = require('bcrypt')
@@ -66,7 +65,7 @@ const create = (req, res) => {
             data:{
               title:'Confirmá la creación de tu cuenta',
               message:'Hola ' + name + '! Por favor valida tu cuenta ahora para empezar a usar Projective',
-              link: process.env.PANEL_URL + '/validate/' + validation_code,
+              link: process.env.API_URL + '/validate/' + validation_code,
               linkText:'Validar mi cuenta'
             },
             templatePath:path.join(__dirname,'/email/template.html')

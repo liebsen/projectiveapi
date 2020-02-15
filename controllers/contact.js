@@ -1,4 +1,7 @@
-const path = require("path");
+const path = require("path")
+const emailHelper = require('../email/helper')
+const emailClient = emailHelper()
+
 const contact = (req, res) => {
     emailClient.send({
       to:process.env.EMAIL_PRIMARY, 

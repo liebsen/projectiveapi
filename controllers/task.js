@@ -12,8 +12,6 @@ const getById = (req, res) => {
          "tasks.id": req.params.id
       }},{ $group: { "tasks.id": req.params.id, count: { $sum: 1 } } })
       .toArray(function(err,results){
-        console.log(req.params.id)
-        console.log(results[0])
         return res.json(results[0])
       })  
 }
