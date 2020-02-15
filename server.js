@@ -427,10 +427,10 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     })   
   })
 
-  app.post('/projects', checkToken, function (req, res) { 
+  app.get('/projects', checkToken, function (req, res) { 
     db.collection('projects').find(
       {
-        owner: req.decoded.id
+        accounts: { id : req.decoded.id } 
       })
       .sort({_id:-1})
       .limit(1000)
@@ -472,40 +472,34 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
       { $unwind : "$milestones" },
       { $match : {
          "milestones.id": req.params.id
-      }})
+      }},{ $group: { "milestones.id": req.params.id, count: { $sum: 1 } } })
       .toArray(function(err,results){
+        console.log(req.params.id)
+        console.log(results[0])
         return res.json(results[0])
       })  
   })
 
   app.delete('/milestone/:id', checkToken, function (req, res) { 
-    var ObjectId = require('mongodb').ObjectId
-    db.collection('projects').find(
+    db.collection('projects').updateOne(
       {
-        '_id': new ObjectId(req.params.project_id)
-      })
-      .toArray(function(err,results){
-        var project = results[0]
-        let milestones = []
-
-        project.milestones.forEach((milestone) => {
-          if(milestone.id != req.params._id){
-            milestones.push(milestone)
-          }
+        'milestones.id': req.params.id
+      },
+      {
+        "$pull": { milestones: { id: req.params.id} }
+      },{ 
+      upsert: true, 
+      'new': true, 
+      returnOriginal:false 
+    }).then(function(doc){
+      return res.json(doc.value)
+    }).catch(function(err){
+      if(err){
+        return res.json({
+          status: 'error'
         })
-
-        db.collection('projects').findOneAndUpdate(
-          {
-            '_id': new ObjectId(req.params._id)
-          },
-          {
-            "$set": {
-              milestones : milestones
-            }
-          },{ new: true }).then(function(doc){
-            return res.json(doc.value)
-          })
-      })  
+      }
+    })  
   })
 
   // creates a milestone
@@ -530,6 +524,29 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
     },
     {
       "$push": { milestones: { "$each" : $push_query } }
+    },{ 
+      upsert: true, 
+      'new': true, 
+      returnOriginal:false 
+    }).then(function(doc){
+      return res.json(doc.value)
+    }).catch(function(err){
+      if(err){
+        return res.json({
+          status: 'error'
+        })
+      }
+    })  
+  })
+
+  // updates a milestone
+  app.post('/milestones/:id', checkToken, function (req, res) { 
+    db.collection('projects').updateOne(
+    {
+      'milestones.id': req.params.id
+    },
+    {
+      "$set": { "milestones.$.extra" : req.body }
     },{ 
       upsert: true, 
       'new': true, 
