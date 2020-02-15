@@ -4,6 +4,10 @@ let sockets = (io, db) => {
 
   io.on('connection', function(socket){ //join room on connect
 
+    socket.on('connect', function() {
+      console.log("connect")
+    })
+
     socket.on('disconnect', function() {
       for(var i = 0; i < socketUsers.length; i++ ){
         if(socketUsers[i].socket === socket.id){

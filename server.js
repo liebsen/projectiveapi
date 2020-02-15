@@ -47,7 +47,7 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
 	const db = database.db(process.env.MONGO_URL.split('/').reverse()[0])
 	app.db = db
 
-	initRoutes(app, db)
+	initRoutes(app)
 	initSockets(io, db)
 
 	let port = 3000

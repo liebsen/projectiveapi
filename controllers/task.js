@@ -1,5 +1,5 @@
-const path = require("path");
-
+const path = require("path")
+const bson = require('bson')
 
 const getById = (req, res) => {
     var ObjectId = require('mongodb').ObjectId
@@ -44,14 +44,14 @@ const create = (req, res) => {
 // creates a task
 
     var ObjectId = require('mongodb').ObjectId;
-    let inputs = req.body.milestones.split("\n")
+    let inputs = req.body.tasks.split("\n")
     let $push_query = []
 
-    inputs.forEach(milestone => {
-      if(milestone.length){
+    inputs.forEach(task => {
+      if(task.length){
         $push_query.push({
           id: new bson.ObjectID().toString(),
-          title: milestone,
+          title: task,
           owner: req.decoded.id
         })
       }
@@ -62,7 +62,7 @@ const create = (req, res) => {
       '_id': new ObjectId(req.params.project_id)
     },
     {
-      "$push": { milestones: { "$each" : $push_query } }
+      "$push": { tasks: { "$each" : $push_query } }
     },{ 
       upsert: true, 
       'new': true, 
@@ -82,10 +82,10 @@ const create = (req, res) => {
 const update = (req, res) => {
     req.app.db.collection('projects').updateOne(
     {
-      'milestones.id': req.params.id
+      'tasks.id': req.params.id
     },
     {
-      "$set": { "milestones.$.extra" : req.body }
+      "$set": { "tasks.$.extra" : req.body }
     },{ 
       upsert: true, 
       'new': true, 
