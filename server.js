@@ -49,8 +49,7 @@ mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, u
 	initRoutes(app)
 	initSockets(io, db)
 
-	let port = 3000
-	http.listen(port, () => {
+	http.listen(process.env.PORT||3000, () => {
 	  console.log(`Server running at localhost:${port}`)
 	})
 })
