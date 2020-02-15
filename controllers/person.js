@@ -46,7 +46,7 @@ const create = (req, res) => {
             subject:'Proyective: ' + req.body.title,
             data:{
               title:'Fuiste asignado a un proyecto',
-              message: 'Pulsá la siguiente URL para registrar tu cuenta ahora<br><a href="' + process.env.APP_URL + '/register">' + process.env.APP_URL + '/register</a>'
+              message: 'Pulsá la siguiente URL para registrar tu cuenta ahora<br><a href="' + process.env.APP_URL + '/register/' + code +'">' + process.env.APP_URL + '/register/' + code + '</a>'
               //link: process.env.APP_URL + '/contact/' + notification.value.external_reference,
               //linkText:'Ver detalle del envío'
             },
@@ -63,7 +63,7 @@ const create = (req, res) => {
           })
 
 
-        //return res.json(doc.value)
+          return res.json(doc.value)
       }).catch(function(err){
         if(err){
           return res.json({
@@ -71,8 +71,6 @@ const create = (req, res) => {
           })
         }
       })
-
-      return res.json(response.ops[0])
     }
   })   
 }
