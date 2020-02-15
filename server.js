@@ -44,12 +44,13 @@ app.use(cors({
 mongodb.MongoClient.connect(process.env.MONGO_URL, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, database) {
 	if(err) throw err
 	const db = database.db(process.env.MONGO_URL.split('/').reverse()[0])
+	const port = process.env.PORT||3000
 	app.db = db
 
 	initRoutes(app)
 	initSockets(io, db)
 
-	http.listen(process.env.PORT||3000, () => {
+	http.listen(port, () => {
 	  console.log(`Server running at localhost:${port}`)
 	})
 })
