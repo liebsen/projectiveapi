@@ -50,10 +50,6 @@ let sockets = (io, db) => {
       io.emit('chat_users', socketUsers)
     })
 
-    socket.on('chat_join', function(id) {
-      socket.join(id)
-    })
-
     socket.on('chat_leave', function(id) {
       socket.leave(id)
     })
@@ -61,6 +57,9 @@ let sockets = (io, db) => {
     socket.on('chat_join', function(data) {
       var exists = false
       let room = data.id
+      console.log("chat_join:")
+      console.log(JSON.stringify(data))
+
       if(!socketUsers[room]){
         socketUsers[room] = []
       }
@@ -80,7 +79,7 @@ let sockets = (io, db) => {
           observe: data.observe
         })
       }
-
+      socket.join(room)
       io.emit('chat_users', socketUsers)
     })
 
@@ -98,10 +97,9 @@ let sockets = (io, db) => {
     })
 
     socket.on('chat_send', function(data) { //data object emitter
-      let id = data.id
-      let item = {}
 
-      io.to(id).emit('data', data)
+      console.log("chat_send: " + JSON.stringify(data))
+      io.to(data.room).emit('chat_line', data)
       /*
       for(var i in data){
         item[i] = data[i]
