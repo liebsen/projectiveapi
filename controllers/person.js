@@ -95,7 +95,7 @@ const assign = (req, res) => {
     returnOriginal:false 
   }).then(function(doc){
 
-    emailClient.send({
+    return emailClient.send({
       to:req.body.email, 
       subject:'Proyective: ' + req.body.title,
       data:{
@@ -116,7 +116,7 @@ const assign = (req, res) => {
       })
     })
 
-    return res.json(doc.value)
+    //return res.json(doc.value)
   }).catch(function(err){
     if(err){
       return res.json({
