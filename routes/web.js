@@ -36,7 +36,7 @@ let routes = (app, db) => {
 	router.get('/issue/:id', authToken, issueController.getById)
 	router.put('/issue/:task_id', authToken, issueController.create)
 
-	router.post('/person/create', authToken, personController.create)
+	router.post('/person/create', authToken, personController.createAndAssign)
 	router.post('/person/assign', authToken, personController.assign)
 	router.post('/person/search', authToken, personController.search)
   

@@ -18,7 +18,8 @@ var defaultSMTPConfig = {
   host: 'smtp.gmail.com',
   port: 587,
   //port: 465,
-  //secure: true,
+  //secure: false,
+  tls: { rejectUnauthorized: false },
   auth: {
     user: process.env.EMAIL_SMTP_USER,
     pass: process.env.EMAIL_SMTP_PASS
@@ -26,7 +27,7 @@ var defaultSMTPConfig = {
 }
 
 var defaultEmailConfig = {
-  from:'"ProjectiveApp" <no-reply@projective.app>',
+  from:'"ProjectiveApp" <no-reply@projective.herokuapp.com>',
 	subject:'',
 	template:'',
   data:{}

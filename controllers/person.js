@@ -18,12 +18,10 @@ const search = (req, res) => {
     }) 
 }
 
-const create = (req, res) => {
+const createAndAssign = (req, res) => {
   var ObjectId = require('mongodb').ObjectId
   var $push_query = []
   const code = new bson.ObjectID().toString()
-  $push_query.push(code)
-
   req.app.db.collection('accounts').insertOne({
     code:code,
     invited_by: req.decoded.id
@@ -32,6 +30,7 @@ const create = (req, res) => {
       console.log('Error occurred while inserting');
     } else {
 
+      $push_query.push({id:response.ops[0]._id})
       req.app.db.collection('projects').findOneAndUpdate(
       {
         '_id': new ObjectId(req.body._id)
@@ -46,9 +45,9 @@ const create = (req, res) => {
 
           emailClient.send({
             to:req.body.email, 
-            subject:'Proyective: ' + req.body.title,
+            subject:'Proyective: Fuiste asignado a un proyecto',
             data:{
-              title:'Fuiste asignado a un proyecto',
+              title:'Fuiste asignado al proyecto ' + req.body.title,
               message: 'Pulsá la siguiente URL para registrar tu cuenta ahora<br><a href="' + process.env.APP_URL + '/register/' + code +'">' + process.env.APP_URL + '/register/' + code + '</a>'
               //link: process.env.APP_URL + '/contact/' + notification.value.external_reference,
               //linkText:'Ver detalle del envío'
@@ -81,11 +80,11 @@ const create = (req, res) => {
 const assign = (req, res) => {
   var ObjectId = require('mongodb').ObjectId
   var $push_query = []
-  $push_query.push(req.body._id)
+  $push_query.push({id:req.body._id})
 
   req.app.db.collection('projects').findOneAndUpdate(
   {
-    '_id': new ObjectId(req.body._id)
+    '_id': new ObjectId(req.body.project_id)
   },
   {
     "$push": { accounts: { "$each" : $push_query } }
@@ -97,9 +96,9 @@ const assign = (req, res) => {
 
     return emailClient.send({
       to:req.body.email, 
-      subject:'Proyective: ' + req.body.title,
+      subject:'Proyective: Fuiste asignado a un proyecto',
       data:{
-        title:'Fuiste asignado a un proyecto',
+        title:'Fuiste asignado al proyecto ' + req.body.title,
         message: 'Pulsá la siguiente URL para iniciar sesión con tu cuenta ahora<br><a href="' + process.env.APP_URL + '/login">' + process.env.APP_URL + '/login</a>'
         //link: process.env.APP_URL + '/contact/' + notification.value.external_reference,
         //linkText:'Ver detalle del envío'
@@ -127,7 +126,7 @@ const assign = (req, res) => {
 }
 
 module.exports = {
-  create: create,
+  createAndAssign: createAndAssign,
   assign: assign,
   search: search
 }
