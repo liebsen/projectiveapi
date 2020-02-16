@@ -24,7 +24,10 @@ const create = (req, res) => {
   const code = new bson.ObjectID().toString()
   $push_query.push(code)
 
-  req.app.db.collection('accounts').insertOne({code:code}, function (error, response) {
+  req.app.db.collection('accounts').insertOne({
+    code:code,
+    invited_by: req.decoded.id
+  }, function (error, response) {
     if(error) {
       console.log('Error occurred while inserting');
     } else {
