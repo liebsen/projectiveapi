@@ -97,28 +97,36 @@ let sockets = (io, db) => {
     })
 
     socket.on('chat_send', function(data) { //data object emitter
-
       console.log("chat_send: " + JSON.stringify(data))
-      io.to(data.room).emit('chat_line', data)
-      /*
-      for(var i in data){
-        item[i] = data[i]
-      }
-     
-      delete item.id 
-      delete item.collection 
-      item.updatedAt = moment().utc().format()      
+      let $push_query = []
+      let copy = {created : moment().format()}
+      let selected = ['name','line']
 
-      var ObjectId = require('mongodb').ObjectId
-      return db.collection(data.collection).findOneAndUpdate(
+      for(var i in data){
+        if(selected.includes(i)){
+          copy[i] = data[i]
+        }
+      }
+
+      $push_query.push(copy)
+      console.log(copy)
+      console.log(data.room)
+
+      db.collection('projects').findOneAndUpdate(
       {
-        '_id': new ObjectId(id)
+        'tasks.id': data.room
       },
       {
-        "$set": item
-      },{ new: true }).then(function(doc){
-        io.to(id).emit('data', data)
-      })*/
+        "$push": { "tasks.$.chat": { "$each" : $push_query } }
+      },{ 
+        upsert: true, 
+        'new': true, 
+        returnOriginal:false 
+      }).then(function(doc){
+        io.to(data.room).emit('chat_line', data)
+      }).catch(function(err){
+        console.log('err: ' + err)
+      })
     })
   })
 }
