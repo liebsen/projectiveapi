@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const moment = require('moment')
-var socketUsers = {}
+let socketUsers = {}
+let tokens = {}
 
 async function validateToken(token) {
   return new Promise((resolve, reject) => {
@@ -21,10 +22,10 @@ async function validateToken(token) {
 
 let sockets = (io, db) => {
 
-  let token = null
+
   io.use(async(socket, next) => {
     try {
-      token = await validateToken(socket.handshake.query.token)
+      tokens[socket.id] = await validateToken(socket.handshake.query.token)
       return next()
     } catch(e) {
       return next(new Error('Authentication error'))
@@ -34,11 +35,11 @@ let sockets = (io, db) => {
   io.on('connection', function(socket){ //join room on connect
 
     socket.on('connect', function() {
-      console.log("connect: " + token.id)
+      console.log("connect: " + tokens[socket.id].id)
     })
 
     socket.on('disconnect', function(a) {
-      console.log("--disconnect: " + token.id)
+      console.log("--disconnect: " + tokens[socket.id].id)
       for(var i = 0; i < socketUsers.length; i++ ){
         for(var j = 0; j < socketUsers[i].length; j++ ){
           if(socketUsers[i][j].socket === socket.id){
@@ -84,7 +85,7 @@ let sockets = (io, db) => {
     })
 
     socket.on('chat_leave', function(data) {
-      console.log("--leaves: " + token.id)
+      console.log("--leaves: " + tokens[socket.id].id)
       for(var i = 0; i < socketUsers.length; i++ ){
         for(var j = 0; j < socketUsers[i].length; j++ ){
           if(socketUsers[i][j].socket === socket.id){
@@ -99,11 +100,11 @@ let sockets = (io, db) => {
     socket.on('chat_send', function(data) { //data object emitter
       console.log("chat_send: " + JSON.stringify(data))
       let $push_query = []
-      let copy = {
-        sender: token.id,
-        created : moment().format()
-      }
       let selected = ['name','line']
+      let copy = {
+        sender: tokens[socket.id].id,
+        created : moment().format()
+      }      
 
       for(var i in data){
         if(selected.includes(i)){
