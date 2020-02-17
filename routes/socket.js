@@ -99,7 +99,10 @@ let sockets = (io, db) => {
     socket.on('chat_send', function(data) { //data object emitter
       console.log("chat_send: " + JSON.stringify(data))
       let $push_query = []
-      let copy = {created : moment().format()}
+      let copy = {
+        sender: token.id,
+        created : moment().format()
+      }
       let selected = ['name','line']
 
       for(var i in data){
