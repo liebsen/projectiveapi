@@ -57,9 +57,8 @@ module.exports = {
 	searchInProject: (req, res) => {
 	    req.app.db.collection('projects').find(
 			{
-				_id: new ObjectId(req.body.project_id)
+				'tasks.id': req.body.id
 			}).toArray(function(err,results){
-
 				var ids = flattenArray(results.map(item => item.accounts.map( account => {
 					return account.id
 				})))
@@ -72,6 +71,7 @@ module.exports = {
 
 				req.app.db.collection('accounts').find(
 					{
+						name: new RegExp(req.body.text, 'i'),
 						_id: { $in : ids } 
 					})
 					.project({

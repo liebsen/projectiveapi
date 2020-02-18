@@ -41,9 +41,6 @@ module.exports = {
     })  
   },
   create:  (req, res) => {
-// creates a task
-
-    var ObjectId = require('mongodb').ObjectId;
     let inputs = req.body.tasks.split("\n")
     let $push_query = []
 
@@ -102,12 +99,15 @@ module.exports = {
     var $push_query = []
     $push_query.push({id:req.body.user._id})
 
+    console.log("-----------")
+    console.log(req.body.id)
+
     req.app.db.collection('projects').findOneAndUpdate(
     {
-      '_id': new ObjectId(req.body.data._id)
+      'tasks.id': req.body.id
     },
     {
-      "$push": { managers: { "$each" : $push_query } }
+      "$push": { "tasks.$.managers": { "$each" : $push_query } }
     },{ 
       upsert: true, 
       'new': true, 
@@ -118,7 +118,7 @@ module.exports = {
         subject:'Proyective: Fuiste asignado a un proyecto',
         data:{
           title:'Fuiste asignado a un proyecto',
-          message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
+          message: 'Ahora podés ser parte del desarrollo de ' + req.body.title,
           link: process.env.APP_URL + '/login',
           linkText:'Iniciá sesión ahora'
         },
@@ -130,7 +130,7 @@ module.exports = {
       }).catch(function(err){
         if(err) console.log(err)
         res.json({
-          status: 'error'
+          status: 'error: ' + err
         })
       })
     }).catch(function(err){

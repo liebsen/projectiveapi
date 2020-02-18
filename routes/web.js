@@ -34,6 +34,7 @@ let routes = (app, db) => {
 	router.post('/project', authToken, projectController.update)
 	router.post('/project/assign', authToken, projectController.assign)
 
+	router.post('/task/assign', authToken, taskController.assign)
 	router.get('/task/:id', authToken, taskController.getById)
 	router.delete('/task/:id', authToken, taskController.deleteById)
 	router.put('/task/:project_id', authToken, taskController.create)
