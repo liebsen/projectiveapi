@@ -1,5 +1,8 @@
 const path = require("path")
 const bson = require('bson')
+const emailHelper = require('../email/helper')
+const emailClient = emailHelper()
+var ObjectId = require('mongodb').ObjectId
 
 module.exports = {
   getOwned: (req, res) => {
@@ -60,5 +63,102 @@ module.exports = {
     }).then(function(doc){
       return res.json(doc.value)
     })
+  },
+  assign: (req, res) => {
+    var $push_query = []
+
+    if(req.body.exists){
+      $push_query.push({id:req.body.user._id})
+
+      req.app.db.collection('projects').findOneAndUpdate(
+      {
+        '_id': new ObjectId(req.body.data._id)
+      },
+      {
+        "$push": { accounts: { "$each" : $push_query } }
+      },{ 
+        upsert: true, 
+        'new': true, 
+        returnOriginal:false 
+      }).then(function(doc){
+        return emailClient.send({
+          to:req.body.user.email, 
+          subject:'Proyective: Fuiste asignado a un proyecto',
+          data:{
+            title:'Fuiste asignado a un proyecto',
+            message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
+            link: process.env.APP_URL + '/login',
+            linkText:'Iniciá sesión ahora'
+          },
+          templatePath:path.join(__dirname,'/../email/template.html')
+        }).then(function(){
+          res.json({
+            status: 'success'
+          })
+        }).catch(function(err){
+          if(err) console.log(err)
+          res.json({
+            status: 'error'
+          })
+        })
+      }).catch(function(err){
+        if(err){
+          return res.json({
+            status: 'error: ' + err
+          })
+        }
+      })
+    } else {
+      const code = new bson.ObjectID().toString()
+      req.app.db.collection('accounts').insertOne({
+        code:code,
+        invited_by: req.decoded.id
+      }, function (error, response) {
+        if(error) {
+          console.log('Error occurred while inserting');
+        } else {
+
+          $push_query.push({id:response.ops[0]._id})
+          req.app.db.collection('projects').findOneAndUpdate(
+          {
+            '_id': new ObjectId(req.body.data._id)
+          },
+          {
+            "$push": { accounts: { "$each" : $push_query } }
+          },{ 
+            upsert: true, 
+            'new': true, 
+            returnOriginal:false 
+          }).then(function(doc){
+            return emailClient.send({
+              to:req.body.data.email, 
+              subject:'Proyective: Fuiste asignado a un proyecto',
+              data:{
+                title:'Fuiste asignado a un proyecto',
+                message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
+                link: process.env.APP_URL + '/register/' + code,
+                linkText:'Registrate ahora'
+              },
+              templatePath:path.join(__dirname,'/../email/template.html')
+            }).then(function(){
+              res.json({
+                status: 'success'
+              })
+            }).catch(function(err){
+              if(err) console.log(err)
+              res.json({
+                status: 'error'
+              })
+            })
+          }).catch(function(err){
+            if(err){
+              return res.json({
+                status: 'error'
+              })
+            }
+          })
+        }
+      })
+    }
   }
-};
+}

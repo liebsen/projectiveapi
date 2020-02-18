@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const moment = require('moment')
 let socketUsers = []
-let chatUsers = []
+let chatUsers = {}
 let tokens = []
 
 async function validateToken(token) {
@@ -38,13 +38,7 @@ let sockets = (io, db) => {
     }
 
     console.log("connect: " + tokens[socket.id].id)
-    console.log(socketUsers)
-
     io.emit('users', socketUsers)
-
-    socket.on('connect', function() {
-      //console.log("bbb")
-    })
 
     socket.on('disconnect', function() {
       console.log("--disconnect: " + tokens[socket.id].id)
@@ -79,22 +73,20 @@ let sockets = (io, db) => {
         chatUsers[room] = []
       }
       for(var i = 0; i < chatUsers[room].length; i++ ){
+        console.log("1")
         if(chatUsers[room][i].code === data.code){
           exists = true
         }
       }
       if(exists === false){
         console.log(data.code + " joins. room: " + room)
-        if(!chatUsers[room]){
-          chatUsers[room] = []
-        }
         chatUsers[room].push({
           code: data.code,
-          socket:socket.id,
-          observe: data.observe
+          socket:socket.id
         })
       }
       socket.join(room)
+      console.log(chatUsers)
       io.emit('chat_users', chatUsers)
     })
 

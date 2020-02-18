@@ -42,5 +42,16 @@ module.exports = {
 						return res.json(results2)
 					})  
 			})
+	},
+	search: (req, res) => {
+		req.app.db.collection('accounts').find(
+		{
+			name: new RegExp(req.body.text, 'i'),
+			_id : { $ne : new ObjectId(req.decoded.id) } 
+		})
+		.project({password:0})
+		.toArray(function(err,results){
+			return res.json(results)
+		}) 
 	}
 }

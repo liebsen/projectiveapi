@@ -24,12 +24,14 @@ let routes = (app, db) => {
 	router.post('/account/data', authToken, accountController.data)
 
 	router.get('/users', authToken, userController.getUsers)
+	router.post('/users/search', authToken, userController.search)
 
 	router.get('/projects', authToken, projectController.getOwned)
 	router.get('/project/:id', authToken, projectController.getById)
 	router.delete('/project/:id', authToken, projectController.deleteById)
 	router.put('/project', authToken, projectController.create)
 	router.post('/project', authToken, projectController.update)
+	router.post('/project/assign', authToken, projectController.assign)
 
 	router.get('/task/:id', authToken, taskController.getById)
 	router.delete('/task/:id', authToken, taskController.deleteById)
@@ -38,10 +40,6 @@ let routes = (app, db) => {
 
 	router.get('/issue/:id', authToken, issueController.getById)
 	router.put('/issue/:task_id', authToken, issueController.create)
-
-	router.post('/person/create', authToken, personController.createAndAssign)
-	router.post('/person/assign', authToken, personController.assign)
-	router.post('/person/search', authToken, personController.search)
   
 	router.post('/multiple-upload',uploadController.uploadImages,uploadController.resizeImages,uploadController.getResult)
 
