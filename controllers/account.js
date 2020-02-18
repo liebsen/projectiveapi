@@ -1,5 +1,7 @@
 const path = require("path")
+const bson = require('bson')
 const jwt = require('jsonwebtoken')
+const moment = require('moment')
 const emailHelper = require('../email/helper')
 const emailClient = emailHelper()
 const bcrypt = require('bcrypt')
@@ -59,8 +61,8 @@ module.exports = {
           upsert: true, 
           'new': true, 
           returnOriginal:false 
-        }).then(function(data) {    
-          emailClient.send({
+        }).then(function(data) {   
+          return emailClient.send({
             to:email,
             subject: name + ', te damos la bienvenida a Projective.',
             data:{
@@ -69,14 +71,14 @@ module.exports = {
               link: process.env.API_URL + '/validate/' + validation_code,
               linkText:'Validar mi cuenta'
             },
-            templatePath:path.join(__dirname,'/email/template.html')
+            templatePath:path.join(__dirname,'/../email/template.html')
           }).catch(function(err){
             if(err) console.log(err)
           }).then(function(){
             res.status(200).send({ status: 'success' });
           })
         }).catch((err) => {
-          res.status(404).send('No code found.');
+          res.status(404).send('No code found. ' + err);
         }) 
       })
     })
