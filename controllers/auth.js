@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-const authToken = (req, res, next) => {
+module.exports = (req, res, next) => {
     const token = req.headers['authorization']
     if(typeof token !== 'undefined') {
         jwt.verify(token, process.env.APP_SECRET, function(err, decoded) {
@@ -16,5 +16,3 @@ const authToken = (req, res, next) => {
         res.sendStatus(403)
     }
 }
-
-module.exports = authToken

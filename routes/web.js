@@ -5,6 +5,7 @@ const contactController = require("./../controllers/contact")
 const authToken = require("./../controllers/auth")
 const accountController = require("./../controllers/account")
 const uploadController = require("./../controllers/upload")
+const userController = require("./../controllers/user")
 const personController = require("./../controllers/person")
 const projectController = require("./../controllers/project")
 const taskController = require("./../controllers/task")
@@ -21,6 +22,8 @@ let routes = (app, db) => {
 	router.post('/account/validate_code', accountController.validate_code)
 	router.post('/account/validate', accountController.validate)
 	router.post('/account/data', authToken, accountController.data)
+
+	router.get('/users', authToken, userController.getUsers)
 
 	router.get('/projects', authToken, projectController.getOwned)
 	router.get('/project/:id', authToken, projectController.getById)

@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
 const moment = require('moment')
-let socketUsers = {}
-let tokens = {}
+let socketUsers = []
+let chatUsers = []
+let tokens = []
 
 async function validateToken(token) {
   return new Promise((resolve, reject) => {
@@ -21,8 +22,6 @@ async function validateToken(token) {
 }
 
 let sockets = (io, db) => {
-
-
   io.use(async(socket, next) => {
     try {
       tokens[socket.id] = await validateToken(socket.handshake.query.token)
@@ -32,23 +31,38 @@ let sockets = (io, db) => {
     }
   })
 
-  io.on('connection', function(socket){ //join room on connect
+  io.on('connection', function(socket){
+
+    if(!socketUsers[socket.id]){
+      socketUsers.push(tokens[socket.id].id)
+    }
+
+    console.log("connect: " + tokens[socket.id].id)
+    console.log(socketUsers)
+
+    io.emit('users', socketUsers)
 
     socket.on('connect', function() {
-      console.log("connect: " + tokens[socket.id].id)
+      //console.log("bbb")
     })
 
-    socket.on('disconnect', function(a) {
+    socket.on('disconnect', function() {
       console.log("--disconnect: " + tokens[socket.id].id)
-      for(var i = 0; i < socketUsers.length; i++ ){
-        for(var j = 0; j < socketUsers[i].length; j++ ){
-          if(socketUsers[i][j].socket === socket.id){
-            console.log(socketUsers[i][j].code + " just disconnected")
-            socketUsers[i].splice(j, 1)
+      for(var i = 0; i < chatUsers.length; i++ ){
+        for(var j = 0; j < chatUsers[i].length; j++ ){
+          if(chatUsers[i][j].socket === socket.id){
+            console.log(chatUsers[i][j].code + " disconnected from room")
+            chatUsers[i].splice(j, 1)
           }
         }
       }
-      io.emit('chat_users', socketUsers)
+
+      socketUsers = socketUsers.filter(e => { return e != tokens[socket.id].id })
+
+      console.log(socketUsers)
+
+      io.emit('users', socketUsers)
+      io.emit('chat_users', chatUsers)
     })
 
     socket.on('chat_leave', function(id) {
@@ -61,40 +75,40 @@ let sockets = (io, db) => {
       console.log("chat_join:")
       console.log(JSON.stringify(data))
 
-      if(!socketUsers[room]){
-        socketUsers[room] = []
+      if(!chatUsers[room]){
+        chatUsers[room] = []
       }
-      for(var i = 0; i < socketUsers[room].length; i++ ){
-        if(socketUsers[room][i].code === data.code){
+      for(var i = 0; i < chatUsers[room].length; i++ ){
+        if(chatUsers[room][i].code === data.code){
           exists = true
         }
       }
       if(exists === false){
         console.log(data.code + " joins. room: " + room)
-        if(!socketUsers[room]){
-          socketUsers[room] = []
+        if(!chatUsers[room]){
+          chatUsers[room] = []
         }
-        socketUsers[room].push({
+        chatUsers[room].push({
           code: data.code,
           socket:socket.id,
           observe: data.observe
         })
       }
       socket.join(room)
-      io.emit('chat_users', socketUsers)
+      io.emit('chat_users', chatUsers)
     })
 
     socket.on('chat_leave', function(data) {
       console.log("--leaves: " + tokens[socket.id].id)
-      for(var i = 0; i < socketUsers.length; i++ ){
-        for(var j = 0; j < socketUsers[i].length; j++ ){
-          if(socketUsers[i][j].socket === socket.id){
-            console.log(socketUsers[i][j].code + " just disconnected")
-            socketUsers[i].splice(j, 1)
+      for(var i = 0; i < chatUsers.length; i++ ){
+        for(var j = 0; j < chatUsers[i].length; j++ ){
+          if(chatUsers[i][j].socket === socket.id){
+            console.log(chatUsers[i][j].code + " just disconnected")
+            chatUsers[i].splice(j, 1)
           }
         }
       }
-      io.emit('chat_users', socketUsers)
+      io.emit('chat_users', chatUsers)
     })
 
     socket.on('chat_send', function(data) { //data object emitter

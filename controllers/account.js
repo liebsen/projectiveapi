@@ -5,8 +5,10 @@ const emailClient = emailHelper()
 const bcrypt = require('bcrypt')
 const tokenExpires = 86400 * 30 * 12 // 1 year
 const saltRounds = 10
+var ObjectId = require('mongodb').ObjectId
 
-const login = (req, res) => {
+module.exports = {
+  login: (req, res) => {
 
     var email = req.body.email.toLowerCase()
     var password = req.body.password
@@ -22,9 +24,8 @@ const login = (req, res) => {
       });
       res.status(200).send({ auth: true, token: token, user: user });
     })
-}
-
-const create = (req, res) => {
+  },
+  create: (req, res) => {
     var email = req.body.email
     var password = req.body.password
     var name = req.body.name
@@ -79,19 +80,17 @@ const create = (req, res) => {
         }) 
       })
     })
-}
-
-const validate_code	 = (req, res) => {
+  },
+  validate_code: (req, res) => {
     req.app.db.collection('accounts').findOne({
-		code: req.body.code
+    code: req.body.code
     },function(err, result) {
-		if (err) return res.status(500).send('Error on the server.');
-		if (!result) return res.status(404).send('No code found.');
-		return res.status(200).send({status:'success'})
+    if (err) return res.status(500).send('Error on the server.');
+    if (!result) return res.status(404).send('No code found.');
+    return res.status(200).send({status:'success'})
     })
-}
-
-const validate = (req, res) => {
+  },
+  validate: (req, res) => {
     req.app.db.collection('accounts').findOneAndUpdate({
       validation_code: req.body.code
     },
@@ -113,11 +112,8 @@ const validate = (req, res) => {
     }).catch(function(err){
       if(err) return res.status(500).send("There was a problem getting user " + err)
     })
-}
-
-const data = (req, res) => {
-
-    var ObjectId = require('mongodb').ObjectId; 
+  },
+  data:  (req, res) => {
     req.app.db.collection('accounts').find({
       '_id': new ObjectId(req.decoded.id)
     })
@@ -128,13 +124,5 @@ const data = (req, res) => {
         data:results[0]
       })
     })  
-}
-
-
-module.exports = {
-  login: login,
-  create: create,
-  validate_code: validate_code,
-  validate: validate,
-  data: data
+  }
 }

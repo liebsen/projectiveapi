@@ -1,7 +1,8 @@
 const path = require("path")
 const bson = require('bson')
 
-const getById = (req, res) => {
+module.exports = {
+  getById: (req, res) => {
     var ObjectId = require('mongodb').ObjectId
     req.app.db.collection('projects').aggregate(
       { $match : {
@@ -14,9 +15,8 @@ const getById = (req, res) => {
       .toArray(function(err,results){
         return res.json(results[0])
       })  
-}
-
-const deleteById = (req, res) => {
+  },
+  deleteById: (req, res) => {
     req.app.db.collection('projects').updateOne(
       {
         'tasks.id': req.params.id
@@ -36,9 +36,8 @@ const deleteById = (req, res) => {
         })
       }
     })  
-}
-
-const create = (req, res) => {
+  },
+  create:  (req, res) => {
 // creates a task
 
     var ObjectId = require('mongodb').ObjectId;
@@ -74,10 +73,8 @@ const create = (req, res) => {
         })
       }
     })  
-}
-
-// updates a task
-const update = (req, res) => {
+  },
+  update: (req, res) => {
     req.app.db.collection('projects').updateOne(
     {
       'tasks.id': req.params.id
@@ -97,11 +94,5 @@ const update = (req, res) => {
         })
       }
     })  
-}
-
-module.exports = {
-  getById: getById,
-  deleteById: deleteById,
-  create: create,
-  update: update
+  }
 }
