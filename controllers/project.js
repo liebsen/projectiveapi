@@ -83,9 +83,9 @@ module.exports = {
       }).then(function(doc){
         return emailClient.send({
           to:req.body.user.email, 
-          subject:'Proyective: Fuiste asignado a un proyecto',
+          subject:'Proyective: Fuiste invitado a un proyecto',
           data:{
-            title:'Fuiste asignado a un proyecto',
+            title:'Fuiste invitado a un proyecto',
             message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
             link: process.env.APP_URL + '/login',
             linkText:'Iniciá sesión ahora'
@@ -132,9 +132,9 @@ module.exports = {
           }).then(function(doc){
             return emailClient.send({
               to:req.body.data.email, 
-              subject:'Proyective: Fuiste asignado a un proyecto',
+              subject:'Proyective: Fuiste invitado a un proyecto',
               data:{
-                title:'Fuiste asignado a un proyecto',
+                title:'Fuiste invitado a un proyecto',
                 message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
                 link: process.env.APP_URL + '/register/' + code,
                 linkText:'Registrate ahora'

@@ -21,9 +21,11 @@ let routes = (app, db) => {
 	router.post('/account/validate_code', accountController.validate_code)
 	router.post('/account/validate', accountController.validate)
 	router.post('/account/data', authToken, accountController.data)
+	router.get('/accounts/:id', authToken,accountController.getById)
 
 	router.get('/users', authToken, userController.getUsers)
 	router.post('/users/search', authToken, userController.search)
+	router.post('/users/search/project', authToken, userController.searchInProject)
 
 	router.get('/projects', authToken, projectController.getOwned)
 	router.get('/project/:id', authToken, projectController.getById)

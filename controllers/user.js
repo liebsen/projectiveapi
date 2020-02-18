@@ -53,5 +53,34 @@ module.exports = {
 		.toArray(function(err,results){
 			return res.json(results)
 		}) 
+	},
+	searchInProject: (req, res) => {
+	    req.app.db.collection('projects').find(
+			{
+				_id: new ObjectId(req.body.project_id)
+			}).toArray(function(err,results){
+
+				var ids = flattenArray(results.map(item => item.accounts.map( account => {
+					return account.id
+				})))
+
+				ids = ids.filter((value,index,self) => {
+					return value && self.indexOf(value) === index
+				})
+
+				ids = ids.map(item => ObjectId(item))
+
+				req.app.db.collection('accounts').find(
+					{
+						_id: { $in : ids } 
+					})
+					.project({
+						email:1,
+						name:1
+					})
+					.toArray(function(err,results2){
+						return res.json(results2)
+					})  
+			})
 	}
 }

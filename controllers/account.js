@@ -64,10 +64,10 @@ module.exports = {
         }).then(function(data) {   
           return emailClient.send({
             to:email,
-            subject: name + ', te damos la bienvenida a Projective.',
+            subject: name + ', te damos la bienvenida a Projective',
             data:{
               title:'Confirmá la creación de tu cuenta',
-              message:'Hola ' + name + '! Por favor valida tu cuenta ahora para empezar a usar Projective',
+              message:'Hola ' + name + '! Por favor valida tu cuenta ahora para empezar a usar Projective.',
               link: process.env.API_URL + '/validate/' + validation_code,
               linkText:'Validar mi cuenta'
             },
@@ -126,5 +126,14 @@ module.exports = {
         data:results[0]
       })
     })  
+  },
+  getById: (req, res) => {
+    req.app.db.collection('accounts').find(
+      {
+        _id: new ObjectId(req.params.id)
+      })
+      .toArray(function(err,results){
+        return res.json(results[0])
+      }) 
   }
 }
