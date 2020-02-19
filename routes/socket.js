@@ -46,24 +46,26 @@ let sockets = (io, db) => {
 
     socket.on('login', function(id) {
       //console.log("--login: " + id)
-      db.collection('accounts').find(
-      {
-        _id : new ObjectId(id)
-      })
-      .project({
-        _id:0,
-        name: 1,
-        email: 1
-      })
-      .toArray(function(err,results){
-        socketUsers[id] = {
-          name: results[0].name,
-          email: results[0].email,
-          socket_id: socket.id
-        }
-        //console.log(socketUsers)
-        io.emit('users', socketUsers)
-      }) 
+      if(!socketUsers[id]){
+        db.collection('accounts').find(
+        {
+          _id : new ObjectId(id)
+        })
+        .project({
+          _id:0,
+          name: 1,
+          email: 1
+        })
+        .toArray(function(err,results){
+          socketUsers[id] = {
+            name: results[0].name,
+            email: results[0].email,
+            socket_id: socket.id
+          }
+          //console.log(socketUsers)
+          io.emit('users', socketUsers)
+        }) 
+      }
     })
 
     socket.on('logout', function(id) {

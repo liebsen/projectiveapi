@@ -38,19 +38,17 @@ module.exports = {
     })  
   },
   create: (req, res) => {
-    let title = req.body.title
-    let text = req.body.text
     let id = new bson.ObjectID().toString()
     let $push_query = []
 
     $push_query.push({
       id: new bson.ObjectID().toString(),
-      title: title,
-      text: text,
+      title: req.body.title,
+      text: req.body.text,
       owner: req.decoded.id
     })
 
-    db.collection('projects').findOneAndUpdate(
+    req.app.db.collection('projects').findOneAndUpdate(
     {
       'tasks.id': req.params.task_id
     },
