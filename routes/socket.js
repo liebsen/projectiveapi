@@ -53,8 +53,6 @@ let sockets = (io, db) => {
 
       socketUsers = socketUsers.filter(e => { return e != tokens[socket.id].id })
 
-      console.log(socketUsers)
-
       io.emit('users', socketUsers)
       io.emit('chat_users', chatUsers)
     })
@@ -66,14 +64,11 @@ let sockets = (io, db) => {
     socket.on('chat_join', function(data) {
       var exists = false
       let room = data.id
-      console.log("chat_join:")
-      console.log(JSON.stringify(data))
 
       if(!chatUsers[room]){
         chatUsers[room] = []
       }
       for(var i = 0; i < chatUsers[room].length; i++ ){
-        console.log("1")
         if(chatUsers[room][i].code === data.code){
           exists = true
         }
@@ -86,7 +81,6 @@ let sockets = (io, db) => {
         })
       }
       socket.join(room)
-      console.log(chatUsers)
       io.emit('chat_users', chatUsers)
     })
 
@@ -119,8 +113,6 @@ let sockets = (io, db) => {
       }
 
       $push_query.push(copy)
-      console.log(copy)
-      console.log(data.room)
 
       db.collection('projects').findOneAndUpdate(
       {
