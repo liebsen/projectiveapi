@@ -19,7 +19,7 @@ let routes = (app, db) => {
 	router.post('/account/login', accountController.login)
 	router.post('/account/create', accountController.create)
 	router.post('/account/validate_code', accountController.validate_code)
-	router.post('/account/validate', accountController.validate)
+	router.post('/account/validate/:code', accountController.validate)
 	router.post('/account/data', authToken, accountController.data)
 	router.get('/accounts/:id', authToken,accountController.getById)
 

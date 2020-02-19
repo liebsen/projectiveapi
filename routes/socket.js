@@ -33,12 +33,11 @@ let sockets = (io, db) => {
 
   io.on('connection', function(socket){
 
-    if(!socketUsers[socket.id]){
+    if(socketUsers[socket.id]){
       socketUsers.push(tokens[socket.id].id)
+      console.log("connect: " + tokens[socket.id].id)
+      io.emit('users', socketUsers)
     }
-
-    console.log("connect: " + tokens[socket.id].id)
-    io.emit('users', socketUsers)
 
     socket.on('disconnect', function() {
       console.log("--disconnect: " + tokens[socket.id].id)

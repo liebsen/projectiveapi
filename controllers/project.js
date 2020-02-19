@@ -68,6 +68,11 @@ module.exports = {
     var $push_query = []
 
     if(req.body.exists){
+
+      if(!req.body.user){
+        return res.sendStatus(402)
+      }
+
       $push_query.push({id:req.body.user._id})
 
       req.app.db.collection('projects').findOneAndUpdate(
@@ -110,50 +115,59 @@ module.exports = {
       })
     } else {
       const code = new bson.ObjectID().toString()
-      req.app.db.collection('accounts').insertOne({
-        code:code,
-        invited_by: req.decoded.id
-      }, function (error, response) {
-        if(error) {
-          console.log('Error occurred while inserting');
+      req.app.db.collection('accounts').findOne({
+        email: req.body.data.email
+      },function(err, result) {
+        if(result){
+          return res.sendStatus(403)
         } else {
+          req.app.db.collection('accounts').insertOne({
+            code:code,
+            email: req.body.data.email,
+            invited_by: req.decoded.id
+          }, function (error, response) {
+            if(error) {
+              console.log('Error occurred while inserting');
+            } else {
 
-          $push_query.push({id:response.ops[0]._id})
-          req.app.db.collection('projects').findOneAndUpdate(
-          {
-            '_id': new ObjectId(req.body.data._id)
-          },
-          {
-            "$push": { accounts: { "$each" : $push_query } }
-          },{ 
-            upsert: true, 
-            'new': true, 
-            returnOriginal:false 
-          }).then(function(doc){
-            return emailClient.send({
-              to:req.body.data.email, 
-              subject:'Proyective: Fuiste invitado a un proyecto',
-              data:{
-                title:'Fuiste invitado a un proyecto',
-                message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
-                link: process.env.APP_URL + '/register/' + code,
-                linkText:'Registrate ahora'
+              $push_query.push({id:response.ops[0]._id.toString()})
+              req.app.db.collection('projects').findOneAndUpdate(
+              {
+                '_id': new ObjectId(req.body.data._id)
               },
-              templatePath:path.join(__dirname,'/../email/template.html')
-            }).then(function(){
-              res.json({
-                status: 'success'
-              })
-            }).catch(function(err){
-              if(err) console.log(err)
-              res.json({
-                status: 'error'
-              })
-            })
-          }).catch(function(err){
-            if(err){
-              return res.json({
-                status: 'error'
+              {
+                "$push": { accounts: { "$each" : $push_query } }
+              },{ 
+                upsert: true, 
+                'new': true, 
+                returnOriginal:false 
+              }).then(function(doc){
+                return emailClient.send({
+                  to:req.body.data.email, 
+                  subject:'Proyective: Fuiste invitado a un proyecto',
+                  data:{
+                    title:'Fuiste invitado a un proyecto',
+                    message: 'Ahora podés ser parte del desarrollo de ' + req.body.data.title,
+                    link: process.env.APP_URL + '/register/' + code,
+                    linkText:'Registrate ahora'
+                  },
+                  templatePath:path.join(__dirname,'/../email/template.html')
+                }).then(function(){
+                  res.json({
+                    status: 'success'
+                  })
+                }).catch(function(err){
+                  if(err) console.log(err)
+                  res.json({
+                    status: 'error'
+                  })
+                })
+              }).catch(function(err){
+                if(err){
+                  return res.json({
+                    status: 'error'
+                  })
+                }
               })
             }
           })
