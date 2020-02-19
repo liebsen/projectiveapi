@@ -10,7 +10,7 @@ let sockets = (io, db) => {
     const id = socket.handshake.query.token
 
     if(id && !socketUsers[id]){
-      //console.log("---catch: " + socket.id)
+      console.log("---catch: " + id)
       db.collection('accounts').find(
       {
         _id : new ObjectId(id)
@@ -32,7 +32,7 @@ let sockets = (io, db) => {
     }
 
     socket.on('disconnect', function() {
-      //console.log("--disconnect: " + socket.id)
+      console.log("--disconnect: " + socket.id)
 
       for(var i in socketUsers){
         if(socketUsers[i].socket_id === socket.id){
@@ -45,8 +45,8 @@ let sockets = (io, db) => {
     })
 
     socket.on('login', function(id) {
-      //console.log("--login: " + id)
       if(!socketUsers[id]){
+        console.log("--login: " + id)
         db.collection('accounts').find(
         {
           _id : new ObjectId(id)
@@ -75,7 +75,7 @@ let sockets = (io, db) => {
         }
       }
 
-      //console.log("--logout: " + id)
+      console.log("--logout: " + id)
       //console.log(socketUsers)
       io.emit('users', socketUsers)
     })
