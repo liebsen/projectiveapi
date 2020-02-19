@@ -99,7 +99,8 @@ let sockets = (io, db) => {
       $push_query.push({
         sender: data.sender,
         name: data.name,
-        line: data.line
+        line: data.line,
+        created: moment().format()
       })
 
       db.collection('projects').findOneAndUpdate(

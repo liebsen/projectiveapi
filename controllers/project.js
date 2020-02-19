@@ -81,7 +81,7 @@ module.exports = {
         '_id': new ObjectId(req.body.data._id)
       },
       {
-        "$push": { accounts: { "$each" : $push_query } }
+        "$addToSet": { accounts: { "$each" : $push_query } }
       },{ 
         upsert: true, 
         'new': true, 
