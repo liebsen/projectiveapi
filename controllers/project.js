@@ -50,10 +50,11 @@ module.exports = {
       }
     })
   },
-  update:  (req, res) => {
-    var ObjectId = require('mongodb').ObjectId; 
+  update: (req, res) => {
+    const id = req.body._id
+    delete req.body._id
     req.app.db.collection('projects').findOneAndUpdate({
-      '_id': new ObjectId(req.body._id)
+      '_id': new ObjectId(id)
     },{
       "$set": req.body
     },{ 
@@ -64,7 +65,7 @@ module.exports = {
       return res.json(doc.value)
     })
   },
-  assign: (req, res) => {
+  share: (req, res) => {
     var $push_query = []
 
     if(req.body.exists){

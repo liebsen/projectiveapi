@@ -32,9 +32,9 @@ let routes = (app, db) => {
 	router.delete('/project/:id', authToken, projectController.deleteById)
 	router.put('/project', authToken, projectController.create)
 	router.post('/project', authToken, projectController.update)
-	router.post('/project/assign', authToken, projectController.assign)
+	router.post('/project/share', authToken, projectController.share)
 
-	router.post('/task/assign', authToken, taskController.assign)
+	router.post('/task/share', authToken, taskController.share)
 	router.get('/task/:id', authToken, taskController.getById)
 	router.delete('/task/:id', authToken, taskController.deleteById)
 	router.put('/task/:project_id', authToken, taskController.create)

@@ -80,7 +80,10 @@ module.exports = {
       'tasks.id': req.params.id
     },
     {
-      "$set": { "tasks.$.extra" : req.body }
+      "$set": { 
+        "tasks.$.title": req.body.title,
+        "tasks.$.extra" : req.body.extra
+      }
     },{ 
       upsert: true, 
       'new': true, 
@@ -95,7 +98,7 @@ module.exports = {
       }
     })  
   },
-  assign: (req, res) => {
+  share: (req, res) => {
     var $push_query = []
     $push_query.push({id:req.body.user._id})
 
