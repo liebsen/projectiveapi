@@ -124,5 +124,66 @@ module.exports = {
       .toArray(function(err,results){
         return res.json(results[0])
       }) 
+  },
+  getNotifications: (req, res) => {
+    req.app.db.collection('accounts').findOneAndUpdate({
+      _id: new ObjectId(req.decoded.id)
+    },{
+      "$set" : { "notifications.$[].read": 1 }
+    },{ 
+      'new': true, 
+      returnOriginal:false 
+    }).then(function(doc) {
+      if (!doc.value) return res.status(404).send('Account might be deleted')
+
+      let lastNotifications = doc.value.notifications.reverse()
+
+      if(lastNotifications.length > 2){
+        lastNotifications = lastNotifications.splice(2)
+      }
+
+      function findExtraData(item) {
+        return new Promise((resolve, reject) => {
+          req.app.db.collection('projects').findOne({"tasks.id": item.room}, function(err,doc) {
+            req.app.db.collection('accounts').findOne({_id: new ObjectId(item.sender)}, function(err,doc2) {
+              resolve({
+                sender: doc2.name,
+                project: doc.title,
+                task: doc.tasks[0].title
+              })
+            })
+          })
+        })
+      } 
+
+      let promises = lastNotifications.map(element => {
+        return findExtraData(element)
+          .then(extra => {
+            element.extra = extra
+            return element
+          })
+      })
+
+      Promise.all(promises)
+        .then(results => {
+          return res.json(results)
+        })
+        .catch(e => {
+          console.error(e)
+        })     
+    }) 
+  },
+  getNotificationsCount: (req, res) => {
+    req.app.db.collection('accounts').findOne({
+      _id: new ObjectId(req.decoded.id)
+    },function(err, doc) {
+      if (err) return res.status(500).send('Error on the server')
+      if (!doc) return res.status(404).send('Account might be deleted')
+      var filter = []
+      if(doc.notifications){
+        filter = doc.notifications.filter(item => !item.read)
+      }
+      return res.json({count:filter.length})
+    })
   }
 }

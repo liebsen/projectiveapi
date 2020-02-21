@@ -6,7 +6,6 @@ var ObjectId = require('mongodb').ObjectId
 
 module.exports = {
   getById: (req, res) => {
-    var ObjectId = require('mongodb').ObjectId
     req.app.db.collection('projects').aggregate(
       { $match : {
          "tasks.id": req.params.id
@@ -72,7 +71,7 @@ module.exports = {
           status: 'error'
         })
       }
-    })  
+    })
   },
   update: (req, res) => {
     req.app.db.collection('projects').updateOne(
@@ -101,9 +100,6 @@ module.exports = {
   share: (req, res) => {
     var $push_query = []
     $push_query.push({id:req.body.user._id})
-
-    console.log("-----------")
-    console.log(req.body.id)
 
     req.app.db.collection('projects').findOneAndUpdate(
     {

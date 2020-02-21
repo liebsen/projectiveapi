@@ -17,6 +17,20 @@ module.exports = {
         return res.json(results)
       })  
   },
+  getOwnedIds: (req, res) => {
+    req.app.db.collection('projects').find(
+      {
+        accounts: { id : req.decoded.id } 
+      })
+      .sort({_id:-1})
+      .limit(1000)
+      .skip(0)
+      .toArray(function(err,results){
+        let ids = results.map(item => item._id)
+        console.log(ids)
+        return res.json(ids)
+      })  
+  },
   getById: (req, res) => {
     var ObjectId = require('mongodb').ObjectId
     req.app.db.collection('projects').find(

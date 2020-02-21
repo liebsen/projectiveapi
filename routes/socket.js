@@ -95,12 +95,13 @@ let sockets = (io, db) => {
     socket.on('send', function(data) { //data object emitter
       //console.log("send: " + JSON.stringify(data))
       let $push_query = []
+      const $created = moment().format()
 
       $push_query.push({
         sender: data.sender,
         name: data.name,
         line: data.line,
-        created: moment().format()
+        created: $created
       })
 
       db.collection('projects').findOneAndUpdate(
@@ -113,8 +114,36 @@ let sockets = (io, db) => {
         upsert: true, 
         'new': true, 
         returnOriginal:false 
-      }).then(function(){
+      }).then(function(doc){
+
         io.to(data.room).emit('chat_line', data)
+        io.emit('notification', {
+          id: doc.value._id,
+          room: data.room,
+          sender: data.sender
+        })
+
+        var accounts = doc.value.accounts
+        accounts = accounts.filter(a => a.id != new ObjectId(data.sender))
+        const ids = accounts.map(a => new ObjectId(a.id))
+
+        $push_query = []
+        $push_query.push({
+          sender: data.sender,
+          room: data.room,
+          created: $created,
+          read: 0
+        })
+
+        db.collection('accounts').updateMany({
+          "_id": { "$in": ids }
+        },{
+          "$push": { "notifications": { "$each" : $push_query } }
+        }).then((doc) => {
+          //console.log(doc.value)
+        })
+
+        
       }).catch(function(err){
         console.log('err: ' + err)
       })
