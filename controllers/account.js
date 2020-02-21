@@ -131,16 +131,17 @@ module.exports = {
     },{
       "$set" : { "notifications.$[].read": 1 }
     },{ 
-      'new': true, 
-      returnOriginal:false 
+      'new': false, 
+      returnOriginal:true 
     }).then(function(doc) {
       if (!doc.value) return res.status(404).send('Account might be deleted')
 
       let lastNotifications = doc.value.notifications.reverse()
-
+      /*
+      let lastNotifications = doc.value.notifications.reverse()
       if(lastNotifications.length > 2){
         lastNotifications = lastNotifications.splice(2)
-      }
+      }*/
 
       function findExtraData(item) {
         return new Promise((resolve, reject) => {
