@@ -146,11 +146,12 @@ module.exports = {
         return new Promise((resolve, reject) => {
           req.app.db.collection('projects').findOne({"tasks.id": item.room}, function(err,doc) {
             req.app.db.collection('accounts').findOne({_id: new ObjectId(item.sender)}, function(err,doc2) {
-              let title = doc && doc.title ? doc.title : '?'
+              let project = doc && doc.title ? doc.title : '?'
+              let task = doc && doc.tasks[0].title ? doc.tasks[0].title : '?'
               resolve({
                 sender: doc2.name,
-                project: title,
-                task: doc.tasks[0].title
+                project: project,
+                task: task
               })
             })
           })
