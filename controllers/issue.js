@@ -3,7 +3,7 @@ const bson = require('bson')
 
 module.exports = {
   getById:  (req, res) => {
-    db.collection('projects').aggregate(
+    req.app.db.collection('projects').aggregate(
       { $match : {
          "tasks.issues.id": req.params.id
       }},
@@ -19,10 +19,10 @@ module.exports = {
   deleteById:  (req, res) => {
     req.app.db.collection('projects').updateOne(
       {
-        'tasks.id': req.params.id
+        'tasks.issues.id': req.params.id
       },
       {
-        "$pull": { tasks: { id: req.params.id} }
+        "$pull": { "tasks.$.issues": { id: req.params.id} }
       },{ 
       upsert: true, 
       'new': true, 
@@ -32,7 +32,7 @@ module.exports = {
     }).catch(function(err){
       if(err){
         return res.json({
-          status: 'error'
+          status: 'error: ' + err
         })
       }
     })  

@@ -45,6 +45,7 @@ let routes = (app, db) => {
 
 	router.get('/issue/:id', authToken, issueController.getById)
 	router.put('/issue/:task_id', authToken, issueController.create)
+	router.delete('/issue/:id', authToken, issueController.deleteById)
   
 	router.post('/multiple-upload',uploadController.uploadImages,uploadController.resizeImages,uploadController.getResult)
 
