@@ -137,11 +137,10 @@ module.exports = {
       if (!doc.value) return res.status(404).send('Account might be deleted')
 
       let lastNotifications = doc.value.notifications.reverse()
-      /*
-      let lastNotifications = doc.value.notifications.reverse()
-      if(lastNotifications.length > 2){
-        lastNotifications = lastNotifications.splice(2)
-      }*/
+
+      if(lastNotifications.length > 50){
+        lastNotifications = lastNotifications.slice(0,50)
+      }
 
       function findExtraData(item) {
         return new Promise((resolve, reject) => {
