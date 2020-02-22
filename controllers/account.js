@@ -148,7 +148,7 @@ module.exports = {
             req.app.db.collection('accounts').findOne({_id: new ObjectId(item.sender)}, function(err,doc2) {
               resolve({
                 sender: doc2.name,
-                project: doc.title,
+                project: doc.title||"?",
                 task: doc.tasks[0].title
               })
             })
