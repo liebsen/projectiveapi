@@ -26,7 +26,6 @@ let sockets = (io, db) => {
           email: results[0].email,
           socket_id: socket.id
         }
-        console.log(socketUsers)
         io.emit('users', socketUsers)
       }) 
     }
