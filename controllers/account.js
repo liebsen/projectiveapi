@@ -152,6 +152,8 @@ module.exports = {
                   project: doc.title,
                   task: doc.tasks[0].title
                 })
+              } else {
+                resolve(null)
               }
             })
           })
@@ -165,6 +167,7 @@ module.exports = {
               element.extra = extra
               return element
             }
+            return false
           })
       })
 
