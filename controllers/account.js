@@ -146,13 +146,15 @@ module.exports = {
         return new Promise((resolve, reject) => {
           req.app.db.collection('projects').findOne({"tasks.id": item.room}, function(err,doc) {
             req.app.db.collection('accounts').findOne({_id: new ObjectId(item.sender)}, function(err,doc2) {
-              let project = doc && doc.title ? doc.title : '?'
-              let task = doc && doc.tasks[0].title ? doc.tasks[0].title : '?'
-              resolve({
-                sender: doc2.name,
-                project: project,
-                task: task
-              })
+              if (doc) {
+                resolve({
+                  sender: doc2.name,
+                  project: project,
+                  task: task
+                })
+              } else {
+                reject()
+              }
             })
           })
         })
@@ -161,8 +163,11 @@ module.exports = {
       let promises = lastNotifications.map(element => {
         return findExtraData(element)
           .then(extra => {
-            element.extra = extra
-            return element
+            if (extra) {
+              element.extra = extra
+              return element
+            }
+            return false
           })
       })
 
