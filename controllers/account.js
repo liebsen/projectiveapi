@@ -163,17 +163,14 @@ module.exports = {
       let promises = lastNotifications.map(element => {
         return findExtraData(element)
           .then(extra => {
-            if (extra) {
-              element.extra = extra
-              return element
-            }
-            return false
+            element.extra = extra
+            return element
           })
       })
 
       Promise.all(promises)
         .then(results => {
-          return res.json(results)
+          return res.json(results.map(e => e))
         })
         .catch(e => {
           console.error(e)
