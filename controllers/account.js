@@ -170,7 +170,7 @@ module.exports = {
 
       Promise.all(promises)
         .then(results => {
-          return res.json(results.map(e => e.extra))
+          return res.json(results.map(e => e && e.extra))
         })
         .catch(e => {
           console.error(e)
