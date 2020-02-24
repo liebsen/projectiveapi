@@ -152,8 +152,6 @@ module.exports = {
                   project: doc.title,
                   task: doc.tasks[0].title
                 })
-              } else {
-                reject()
               }
             })
           })
@@ -167,7 +165,6 @@ module.exports = {
               element.extra = extra
               return element
             }
-            return false
           })
       })
 
