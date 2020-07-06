@@ -10,7 +10,7 @@ const io = require('socket.io')(http, { origins: '*:*'})
 const allowedOrigins = [
 	'http://localhost:3000',
 	'http://0.0.0.0:8000',
-	'https://localhost:8080',
+	'http://localhost:8080',
 	'https://projective.herokuapp.com',
 	'https://projectiveapi.herokuapp.com'
 ]
@@ -32,7 +32,7 @@ app.use(cors({
 			console.log("not allowed origin to unknown")
 			return callback(null, true)
 		}
-		if(allowedOrigins.indexOf(origin) === -1){
+		if(allowedOrigins.includes(origin) === -1){
 			var msg = 'The CORS policy for this site does not ' +
 				'allow access from the specified Origin.'
 			return callback(new Error(msg), false)

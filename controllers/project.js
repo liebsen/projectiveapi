@@ -82,9 +82,9 @@ module.exports = {
   share: (req, res) => {
     var $push_query = []
 
-    if(req.body.exists){
+    if (req.body.exists) {
 
-      if(!req.body.user){
+      if (!req.body.user) {
         return res.sendStatus(402)
       }
 
@@ -129,6 +129,7 @@ module.exports = {
         }
       })
     } else {
+
       const code = new bson.ObjectID().toString()
       req.app.db.collection('accounts').findOne({
         email: req.body.data.email

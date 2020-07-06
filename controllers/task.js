@@ -48,7 +48,11 @@ module.exports = {
         $push_query.push({
           id: new bson.ObjectID().toString(),
           title: task,
-          owner: req.decoded.id
+          owner: req.decoded.id,
+          extra: {
+            progress: 0,
+            text: task
+          }
         })
       }
     })

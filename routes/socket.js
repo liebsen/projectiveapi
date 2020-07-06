@@ -21,12 +21,14 @@ let sockets = (io, db) => {
         email: 1
       })
       .toArray(function(err,results){
-        socketUsers[id] = {
-          name: results[0].name,
-          email: results[0].email,
-          socket_id: socket.id
+        if (results) {
+          socketUsers[id] = {
+            name: results[0].name,
+            email: results[0].email,
+            socket_id: socket.id
+          }
+          io.emit('users', socketUsers)
         }
-        io.emit('users', socketUsers)
       }) 
     }
 
